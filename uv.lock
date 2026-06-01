@@ -1080,7 +1080,7 @@ wheels = [
 ]
 
 [[package]]
-name = "nyc-taxi-pipeline"
+name = "nyc-taxi-irregular-croppers"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
