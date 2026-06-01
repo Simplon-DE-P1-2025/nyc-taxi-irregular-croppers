@@ -1,0 +1,13 @@
+[project]
+name = "spike-duckdb-hybride"
+version = "0.1.0"
+description = "Spike POC — système hybride DuckDB (exploration/dev local, gratuit) + Snowflake (prod). Branche jetable, à débattre."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dbt-duckdb>=1.10.1",
+    "duckdb>=1.5.3",
+    "matplotlib>=3.10.9",
+    "polars>=1.41.2",
+    "pyarrow>=24.0.0",
+]

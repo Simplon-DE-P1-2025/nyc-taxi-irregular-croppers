@@ -13,11 +13,15 @@ secrets/
 *.pem
 .env
 .env.local
-profiles.yml          # chacun crée le sien depuis profiles.yml.example
+# chacun crée le sien depuis profiles.yml.example
+profiles.yml
 
 # Données volumineuses (téléchargées à la demande)
 data/raw/
 *.parquet
+
+# DuckDB (bases locales du spike hybride — jetables, régénérables)
+*.duckdb
 
 # dbt
 dbt_nyc_taxi/target/
