@@ -1,8 +1,8 @@
 name: NYC Taxi Pipeline
 
-# Étape 3a/4 — connexion Snowflake (clé RSA).
+# Étape 3b/4 — connexion Snowflake (clé RSA) + setup de l'infra.
 # On écrit la clé privée (secret) sur le runner, on configure la connexion `snow`
-# par JWT, et on TESTE la connexion. L'exécution du SQL d'infra viendra en 3b.
+# par JWT, on TESTE la connexion, puis on exécute le SQL d'infra (idempotent).
 #
 # Secrets de dépôt requis (Settings → Secrets and variables → Actions) :
 #   SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY (contenu du .p8)
@@ -50,3 +50,6 @@ jobs:
 
       - name: Tester la connexion Snowflake
         run: snow connection test -c projet7
+
+      - name: Setup infra Snowflake (idempotent)
+        run: snow sql -c projet7 -f snowflake/01_setup_infra.sql
