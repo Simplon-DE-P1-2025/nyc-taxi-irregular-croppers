@@ -22,3 +22,4 @@ data/raw/
 dbt_nyc_taxi/target/
 dbt_nyc_taxi/dbt_packages/
 dbt_nyc_taxi/logs/
+logs/
