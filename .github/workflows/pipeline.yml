@@ -1,0 +1,17 @@
+name: NYC Taxi Pipeline
+
+# Étape 1/4 — squelette minimal.
+# On valide d'abord que le workflow se déclenche et tourne, AVANT d'ajouter
+# l'environnement (uv), les secrets Snowflake, l'ingestion et dbt.
+
+on:
+  push:
+    branches: [feat/ci]   # se déclenche à chaque push sur la branche de construction de la CI
+  workflow_dispatch:        # + lancement manuel depuis l'onglet Actions
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bonjour
+        run: echo "Pipeline CI — étape 1 OK. Le workflow tourne."
