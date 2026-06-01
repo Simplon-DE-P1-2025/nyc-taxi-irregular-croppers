@@ -1,4 +1,4 @@
-# 🚕 NYC Taxi Data Pipeline
+# 🚕 NYC Taxi Data Pipeline — Équipe *Irregular Croppers*
 
 Projet de groupe (Simplon Data Engineer) : pipeline de données de bout en bout sur les
 **NYC Yellow Taxi Trip Records** — ingestion → nettoyage → transformation (**dbt**) → analyse,
