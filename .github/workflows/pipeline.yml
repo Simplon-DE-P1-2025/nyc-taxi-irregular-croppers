@@ -1,16 +1,15 @@
 name: NYC Taxi Pipeline
 
-# Étape 3b/4 — connexion Snowflake (clé RSA) + setup de l'infra.
+# Pipeline NYC Taxi — base reproductible : connexion Snowflake (clé RSA) + setup infra.
 # On écrit la clé privée (secret) sur le runner, on configure la connexion `snow`
 # par JWT, on TESTE la connexion, puis on exécute le SQL d'infra (idempotent).
+# À VENIR (étape 4, quand la table RAW existera) : ingestion + dbt build, + un `schedule` mensuel.
 #
 # Secrets de dépôt requis (Settings → Secrets and variables → Actions) :
 #   SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY (contenu du .p8)
 
 on:
-  push:
-    branches: [feat/ci]
-  workflow_dispatch:
+  workflow_dispatch:   # lancement manuel (onglet Actions) — pas d'auto : le pipeline touche Snowflake
 
 jobs:
   build:
