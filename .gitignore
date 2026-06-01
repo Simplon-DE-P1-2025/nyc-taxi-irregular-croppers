@@ -1,0 +1,24 @@
+# Python / uv
+__pycache__/
+*.py[oc]
+.venv/
+build/
+dist/
+*.egg-info/
+
+# Secrets — NE JAMAIS committer (clés RSA, mots de passe, SAS…)
+secrets/
+*.p8
+*.pem
+.env
+.env.local
+profiles.yml          # chacun crée le sien depuis profiles.yml.example
+
+# Données volumineuses (téléchargées à la demande)
+data/raw/
+*.parquet
+
+# dbt
+dbt_nyc_taxi/target/
+dbt_nyc_taxi/dbt_packages/
+dbt_nyc_taxi/logs/
