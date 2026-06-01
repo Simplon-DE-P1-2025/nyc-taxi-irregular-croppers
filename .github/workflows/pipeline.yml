@@ -1,17 +1,24 @@
 name: NYC Taxi Pipeline
 
-# Étape 2/4 — environnement Python reproductible (uv).
-# On récupère le code, on installe uv, puis on synchronise les dépendances
-# verrouillées (uv.lock). Snowflake / ingestion / dbt viendront aux étapes suivantes.
+# Étape 3a/4 — connexion Snowflake (clé RSA).
+# On écrit la clé privée (secret) sur le runner, on configure la connexion `snow`
+# par JWT, et on TESTE la connexion. L'exécution du SQL d'infra viendra en 3b.
+#
+# Secrets de dépôt requis (Settings → Secrets and variables → Actions) :
+#   SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY (contenu du .p8)
 
 on:
   push:
-    branches: [feat/ci]   # se déclenche à chaque push sur la branche de construction de la CI
-  workflow_dispatch:        # + lancement manuel depuis l'onglet Actions
+    branches: [feat/ci]
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/snowflake_key.p8
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
@@ -22,8 +29,24 @@ jobs:
       - name: Installer les dépendances (verrouillées)
         run: uv sync
 
-      - name: Vérifier l'environnement
+      - name: Installer la Snowflake CLI
+        run: uv tool install snowflake-cli
+
+      - name: Écrire la clé privée + configurer la connexion snow
         run: |
-          uv --version
-          uv run python --version
-          uv run dbt --version
+          printf '%s' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "$SNOWFLAKE_PRIVATE_KEY_PATH"
+          chmod 600 "$SNOWFLAKE_PRIVATE_KEY_PATH"
+          mkdir -p ~/.snowflake
+          cat > ~/.snowflake/config.toml <<EOF
+          [connections.projet7]
+          account = "$SNOWFLAKE_ACCOUNT"
+          user = "$SNOWFLAKE_USER"
+          warehouse = "NYC_TAXI_WH"
+          role = "ACCOUNTADMIN"
+          authenticator = "SNOWFLAKE_JWT"
+          private_key_file = "$SNOWFLAKE_PRIVATE_KEY_PATH"
+          EOF
+          chmod 600 ~/.snowflake/config.toml
+
+      - name: Tester la connexion Snowflake
+        run: snow connection test -c projet7
