@@ -1,8 +1,8 @@
 name: NYC Taxi Pipeline
 
-# Étape 1/4 — squelette minimal.
-# On valide d'abord que le workflow se déclenche et tourne, AVANT d'ajouter
-# l'environnement (uv), les secrets Snowflake, l'ingestion et dbt.
+# Étape 2/4 — environnement Python reproductible (uv).
+# On récupère le code, on installe uv, puis on synchronise les dépendances
+# verrouillées (uv.lock). Snowflake / ingestion / dbt viendront aux étapes suivantes.
 
 on:
   push:
@@ -10,8 +10,20 @@ on:
   workflow_dispatch:        # + lancement manuel depuis l'onglet Actions
 
 jobs:
-  hello:
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: Bonjour
-        run: echo "Pipeline CI — étape 1 OK. Le workflow tourne."
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Installer les dépendances (verrouillées)
+        run: uv sync
+
+      - name: Vérifier l'environnement
+        run: |
+          uv --version
+          uv run python --version
+          uv run dbt --version
