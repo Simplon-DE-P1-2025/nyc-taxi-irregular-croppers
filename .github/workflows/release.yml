@@ -1,17 +1,31 @@
 name: Release
 
-# Étape 5a — squelette. Se déclenche au push d'un tag SemVer `v*` (ex: v1.0.0).
-# On valide d'abord que le déclencheur fonctionne ; la création de la GitHub
-# Release (gh release create) viendra en 5b.
+# Étape 5b — création de la GitHub Release au push d'un tag SemVer `v*`.
+# Les notes de version sont générées automatiquement à partir des commits
+# (et des PR) depuis la release précédente.
 
 on:
   push:
     tags:
       - "v*"
 
+permissions:
+  contents: write   # nécessaire pour que GITHUB_TOKEN puisse créer la release
+
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - name: Annoncer le tag
-        run: echo "Release déclenchée pour le tag ${{ github.ref_name }} (étape 5a OK)."
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # historique complet → notes de version correctes
+
+      - name: Créer la GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            --title "${{ github.ref_name }}" \
+            --generate-notes \
+            --verify-tag
