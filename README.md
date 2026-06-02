@@ -8,8 +8,9 @@ le tout dans **Snowflake** et orchestré par **GitHub Actions**.
 > (setup Snowflake, ingestion, dbt, CI) arriveront **une par une, via Pull Request**.
 
 ## Par où commencer
+- 🚀 **Nouveau ? → [docs/onboarding.md](docs/onboarding.md)** — du clone au `dbt build` (connexion Snowflake, infra, seed de dev).
 - 📋 **[docs/brief.md](docs/brief.md)** — le sujet et les livrables attendus.
-- 🤝 Guide d'organisation d'équipe : *en cours de rédaction* (arrivera par PR).
+- 🤝 Organisation d'équipe : **[docs/workflow-equipe.md](docs/workflow-equipe.md)** · **[docs/guide-github-projects.md](docs/guide-github-projects.md)**.
 
 ## Comment contribuer
 1. `git checkout main && git pull`

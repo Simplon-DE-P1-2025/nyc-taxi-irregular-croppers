@@ -1,24 +1,21 @@
-# Modèle de connexion dbt → Snowflake (auth par clé RSA).
-# Copie ce fichier en ~/.dbt/profiles.yml puis exporte les variables d'environnement,
-# OU lance dbt avec --profiles-dir <dossier de ce fichier>. AUCUN secret en clair ici.
+# Modèle de connexion dbt → Snowflake pour le DEV LOCAL (auth navigateur / MFA).
 #
-#   export SNOWFLAKE_ACCOUNT="TPWBVCJ-YT98088"        # TON account identifier (région indifférente)
-#   export SNOWFLAKE_USER="5AMCHAKA"
-#   export SNOWFLAKE_PRIVATE_KEY_PATH="$HOME/.snowflake/nyc_taxi_key.p8"
+#   1) Copie ce fichier :            cp profiles.yml.example ~/.dbt/profiles.yml
+#   2) Remplace <TON_ORG-TON_ACCOUNT> et <TON_USER> par TES infos (cf. docs/onboarding.md).
 #
-# Détails : docs/setup-snowflake.md
+# `externalbrowser` ouvre le navigateur pour le login MFA → AUCUN secret, mot de passe
+# ni clé en clair ici. (La CI, elle, utilise une clé RSA via secrets GitHub, pas ce fichier.)
 
 nyc_taxi:
   target: dev
   outputs:
     dev:
       type: snowflake
-      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
-      user: "{{ env_var('SNOWFLAKE_USER') }}"
-      authenticator: snowflake_jwt
-      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
+      account: "<TON_ORG-TON_ACCOUNT>"   # ex. TPWBVCJ-YT98088 — Snowsight → View account details
+      user: "<TON_USER>"                 # ton nom d'utilisateur Snowflake (PAS ton email)
+      authenticator: externalbrowser
       role: ACCOUNTADMIN
       database: NYC_TAXI_DB
       warehouse: NYC_TAXI_WH
-      schema: PUBLIC          # défaut ; les modèles ciblent STAGING / FINAL via +schema
+      schema: PUBLIC          # fallback ; les modèles ciblent STAGING / FINAL via +schema (dbt_project.yml)
       threads: 4
