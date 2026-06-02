@@ -51,6 +51,29 @@ USE SCHEMA    RAW;
 --     ...   -- <— à définir par l'équipe d'après l'EDA
 -- );
 
+CREATE OR REPLACE TABLE RAW.yellow_taxi_trips (
+  vendorid          NUMBER,
+  tpep_pickup_datetime   TIMESTAMP_NTZ,
+  tpep_dropoff_datetime  TIMESTAMP_NTZ,
+  passenger_count   NUMBER,
+  trip_distance     FLOAT,
+  RatecodeID        NUMBER,
+  store_and_fwd_flag VARCHAR(1),
+  PULocationID      NUMBER,
+  DOLocationID      NUMBER,
+  payment_type      NUMBER,
+  fare_amount       FLOAT,
+  extra             FLOAT,
+  mta_tax           FLOAT,
+  tip_amount        FLOAT,
+  tolls_amount      FLOAT,
+  improvement_surcharge FLOAT,
+  total_amount      FLOAT,
+  congestion_surcharge  FLOAT,
+  airport_fee       FLOAT,
+  cbd_congestion_fee FLOAT
+);
+
 -- 5) Stage interne pour recevoir les Parquet (PUT depuis l'ingestion).
 --    NB : le chargement direct depuis l'URL CloudFront ne fonctionne pas (ce n'est pas un bucket S3).
 CREATE STAGE IF NOT EXISTS RAW.nyc_taxi_stage
