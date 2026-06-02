@@ -1,0 +1,13 @@
+[project]
+name = "nyc-taxi-irregular-croppers"
+version = "0.1.0"
+description = "Pipeline data NYC Yellow Taxi (équipe Irregular Croppers) — Snowflake + dbt + GitHub Actions"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "dbt-core>=1.11",
+    "dbt-snowflake>=1.11",
+    "polars>=1.41",
+    "pyarrow>=24",
+    "matplotlib>=3.9",
+]

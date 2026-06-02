@@ -1,0 +1,54 @@
+name: NYC Taxi Pipeline
+
+# Pipeline NYC Taxi — base reproductible : connexion Snowflake (clé RSA) + setup infra.
+# On écrit la clé privée (secret) sur le runner, on configure la connexion `snow`
+# par JWT, on TESTE la connexion, puis on exécute le SQL d'infra (idempotent).
+# À VENIR (étape 4, quand la table RAW existera) : ingestion + dbt build, + un `schedule` mensuel.
+#
+# Secrets de dépôt requis (Settings → Secrets and variables → Actions) :
+#   SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY (contenu du .p8)
+
+on:
+  workflow_dispatch:   # lancement manuel (onglet Actions) — pas d'auto : le pipeline touche Snowflake
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/snowflake_key.p8
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Installer les dépendances (verrouillées)
+        run: uv sync
+
+      - name: Installer la Snowflake CLI
+        run: uv tool install snowflake-cli
+
+      - name: Écrire la clé privée + configurer la connexion snow
+        run: |
+          printf '%s' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "$SNOWFLAKE_PRIVATE_KEY_PATH"
+          chmod 600 "$SNOWFLAKE_PRIVATE_KEY_PATH"
+          mkdir -p ~/.snowflake
+          cat > ~/.snowflake/config.toml <<EOF
+          [connections.projet7]
+          account = "$SNOWFLAKE_ACCOUNT"
+          user = "$SNOWFLAKE_USER"
+          warehouse = "NYC_TAXI_WH"
+          role = "ACCOUNTADMIN"
+          authenticator = "SNOWFLAKE_JWT"
+          private_key_file = "$SNOWFLAKE_PRIVATE_KEY_PATH"
+          EOF
+          chmod 600 ~/.snowflake/config.toml
+
+      - name: Tester la connexion Snowflake
+        run: snow connection test -c projet7
+
+      - name: Setup infra Snowflake (idempotent)
+        run: snow sql -c projet7 -f snowflake/01_setup_infra.sql
