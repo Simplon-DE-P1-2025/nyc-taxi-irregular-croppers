@@ -56,7 +56,7 @@ CREATE OR REPLACE TABLE RAW.yellow_taxi_trips (
     tpep_pickup_datetime    TIMESTAMP_NTZ,
     tpep_dropoff_datetime   TIMESTAMP_NTZ,
     passenger_count         INTEGER,
-    trip_distance           NUMBER(12,2),
+    trip_distance           FLOAT,
     RatecodeID              INTEGER,
     store_and_fwd_flag      VARCHAR(1),
     PULocationID            INTEGER,
