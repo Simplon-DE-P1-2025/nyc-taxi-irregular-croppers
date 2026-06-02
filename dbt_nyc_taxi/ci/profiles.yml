@@ -1,0 +1,20 @@
+# Profil dbt FACTICE, dédié à la CI (#17).
+# `dbt parse` exige un profil présent mais NE SE CONNECTE PAS : on valide le DAG/SQL hors-ligne.
+# Toutes les valeurs ci-dessous sont bidon — aucun secret, aucun accès Snowflake.
+# Utilisé via : dbt parse --profiles-dir ci --target ci  (depuis dbt_nyc_taxi/).
+#
+# NB : le vrai profil (Snowflake + DuckDB) reste dans dbt_nyc_taxi/profiles.yml, gitignoré.
+
+nyc_taxi:
+  target: ci
+  outputs:
+    ci:
+      type: snowflake
+      account: ci-fake-account
+      user: ci
+      password: ci-fake-password
+      role: CI_ROLE
+      database: NYC_TAXI_DB
+      warehouse: NYC_TAXI_WH
+      schema: PUBLIC
+      threads: 4

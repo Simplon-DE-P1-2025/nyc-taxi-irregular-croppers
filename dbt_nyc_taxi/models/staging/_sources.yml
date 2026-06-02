@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+  - name: nyc_taxi
+    database: NYC_TAXI_DB
+    schema: RAW
+    tables:
+      - name: yellow_taxi_trips
+        description: "Trajets Yellow Taxi bruts (Parquet TLC). Schéma réel 19 col. 2024 + cbd_congestion_fee dès 2025."
+        columns:
+          - name: tpep_pickup_datetime
+            tests: [not_null]
+          - name: pulocationid
+            tests: [not_null]
+          - name: dolocationid
+            tests: [not_null]

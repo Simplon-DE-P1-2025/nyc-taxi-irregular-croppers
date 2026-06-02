@@ -1,0 +1,40 @@
+name: CI
+
+# CI LÉGÈRE et GRATUITE sur chaque PR vers main (#17) — aucun secret, aucune connexion Snowflake.
+# Deux contrôles rapides et hors-ligne :
+#   1) ruff   — lint du code Python (scripts/)
+#   2) dbt    — `dbt deps` + `dbt parse` : valide le DAG/SQL via un profil FACTICE (cf. dbt_nyc_taxi/ci/profiles.yml)
+# Le pipeline lourd (Snowflake) reste dans pipeline.yml, déclenché manuellement.
+
+on:
+  pull_request:
+    branches: [main]
+
+# Annule les runs obsolètes si on pousse de nouveaux commits sur la même PR.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Installer les dépendances (verrouillées)
+        run: uv sync
+
+      - name: Lint Python (ruff)
+        run: uv run ruff check scripts/
+
+      - name: dbt — deps + parse (hors-ligne, profil factice)
+        working-directory: dbt_nyc_taxi
+        run: |
+          uv run dbt deps
+          uv run dbt parse --profiles-dir ci --target ci

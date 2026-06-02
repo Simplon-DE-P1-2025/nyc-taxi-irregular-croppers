@@ -13,7 +13,11 @@ secrets/
 *.pem
 .env
 .env.local
-profiles.yml          # chacun crée le sien depuis profiles.yml.example
+# Profils dbt locaux : chacun crée le sien depuis profiles.yml.example.
+# (git ne gère pas les commentaires en fin de ligne → ils doivent être sur leur propre ligne.)
+# Exception : le profil factice de la CI (dbt_nyc_taxi/ci/profiles.yml) est VERSIONNÉ.
+profiles.yml
+!dbt_nyc_taxi/ci/profiles.yml
 
 # Données volumineuses (téléchargées à la demande)
 data/raw/
@@ -24,6 +28,8 @@ dbt_nyc_taxi/target/
 dbt_nyc_taxi/dbt_packages/
 dbt_nyc_taxi/logs/
 logs/
+# identifiant anonyme local dbt (télémétrie coupée, mais filet de sécurité)
+.user.yml
 
 # OS / éditeur
 .DS_Store
