@@ -10,7 +10,7 @@ Usage : uv run python scripts/explore_data.py
 """
 
 from __future__ import annotations
-import io
+
 import sys
 from pathlib import Path
 
@@ -393,7 +393,7 @@ for m in MONTHS:
 w()
 if drift_cols:
     w(
-        f"- Colonnes **non présentes dans tous les mois** : "
+        "- Colonnes **non présentes dans tous les mois** : "
         + ", ".join(f"`{c}`" for c in drift_cols)
     )
     w(

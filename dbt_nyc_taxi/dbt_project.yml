@@ -1,0 +1,32 @@
+name: 'nyc_taxi'
+version: '1.0.0'
+config-version: 2
+
+profile: 'nyc_taxi'
+
+# Télémétrie anonyme coupée : pas de .user.yml généré, pas d'appel réseau en CI.
+flags:
+  send_anonymous_usage_stats: false
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Architecture RAW → STAGING → FINAL (mappée sur les couches dbt).
+# Comptes isolés (1/personne) → on écrit directement dans STAGING/FINAL (pas de collision).
+models:
+  nyc_taxi:
+    staging:
+      +materialized: view
+      +schema: STAGING
+    intermediate:
+      +materialized: table
+      +schema: STAGING
+    marts:
+      +materialized: table
+      +schema: FINAL

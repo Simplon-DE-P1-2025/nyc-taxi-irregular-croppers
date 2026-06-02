@@ -11,3 +11,15 @@ dependencies = [
     "pyarrow>=24",
     "matplotlib>=3.9",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.15.15",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]   # pycodestyle (E), pyflakes (F), tri des imports (I)
