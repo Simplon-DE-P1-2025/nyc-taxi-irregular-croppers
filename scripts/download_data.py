@@ -106,7 +106,7 @@ def valider_fichier_temporaire(chemin_temp, taille_attendue):
         )
 
 
-def telecharger_fichier(annee, mois, force, timeout, nb_tentatives):
+def telecharger_fichier(annee, mois, force, timeout=TIMEOUT_SECONDES, nb_tentatives=NB_TENTATIVES):
     """Telecharge un fichier mensuel.
 
     Retourne un statut parmi :
