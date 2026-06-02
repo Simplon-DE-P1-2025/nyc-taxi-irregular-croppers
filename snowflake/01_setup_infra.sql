@@ -52,26 +52,30 @@ USE SCHEMA    RAW;
 -- );
 
 CREATE OR REPLACE TABLE RAW.yellow_taxi_trips (
-  vendorid          NUMBER,
-  tpep_pickup_datetime   TIMESTAMP_NTZ,
-  tpep_dropoff_datetime  TIMESTAMP_NTZ,
-  passenger_count   NUMBER,
-  trip_distance     FLOAT,
-  RatecodeID        NUMBER,
-  store_and_fwd_flag VARCHAR(1),
-  PULocationID      NUMBER,
-  DOLocationID      NUMBER,
-  payment_type      NUMBER,
-  fare_amount       FLOAT,
-  extra             FLOAT,
-  mta_tax           FLOAT,
-  tip_amount        FLOAT,
-  tolls_amount      FLOAT,
-  improvement_surcharge FLOAT,
-  total_amount      FLOAT,
-  congestion_surcharge  FLOAT,
-  airport_fee       FLOAT,
-  cbd_congestion_fee FLOAT
+    VendorID                INTEGER,
+    tpep_pickup_datetime    TIMESTAMP_NTZ,
+    tpep_dropoff_datetime   TIMESTAMP_NTZ,
+    passenger_count         INTEGER,
+    trip_distance           NUMBER(12,2),
+    RatecodeID              INTEGER,
+    store_and_fwd_flag      VARCHAR(1),
+    PULocationID            INTEGER,
+    DOLocationID            INTEGER,
+    payment_type            INTEGER,
+    fare_amount             NUMBER(12,2),
+    extra                   NUMBER(12,2),
+    mta_tax                 NUMBER(12,2),
+    tip_amount              NUMBER(12,2),
+    tolls_amount            NUMBER(12,2),
+    improvement_surcharge   NUMBER(12,2),
+    total_amount            NUMBER(12,2),
+    congestion_surcharge    NUMBER(12,2),
+    Airport_fee             NUMBER(12,2),
+    cbd_congestion_fee      NUMBER(12,2),
+
+    -- Métad
+    source_file             STRING,
+    loaded_at               TIMESTAMP_NTZ DEFAULT CURRENT_TIMESTAMP()
 );
 
 -- 5) Stage interne pour recevoir les Parquet (PUT depuis l'ingestion).
