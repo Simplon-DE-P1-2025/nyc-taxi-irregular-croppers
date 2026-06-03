@@ -1,0 +1,71 @@
+version: 2
+
+models:
+  - name: stg_yellow_taxi_trips
+    description: >
+      Couche STAGING des trajets NYC Taxi.
+      Nettoyage + validation avant couche intermédiaire.
+
+    columns:
+
+      # CLÉS OBLIGATOIRES
+
+      - name: tpep_pickup_datetime
+        tests:
+          - not_null
+
+      - name: pulocationid
+        tests:
+          - not_null
+
+      - name: dolocationid
+        tests:
+          - not_null
+
+      - name: fare_amount
+        tests:
+          - not_null
+
+      - name: total_amount
+        tests:
+          - not_null
+
+      
+      # VALEURS AUTORISÉES
+
+      - name: payment_type
+        tests:
+          - accepted_values:
+              values: [0, 1, 2, 3, 4, 5, 6]
+
+      - name: ratecodeid
+        tests:
+          - accepted_values:
+              values: [1, 2, 3, 4, 5, 6, 99]
+
+      - name: vendorid
+        tests:
+          - accepted_values:
+              values: [1, 2, 6, 7]
+
+      # RÈGLES MÉTIER (IMPORTANT)
+
+      - name: fare_amount
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "fare_amount >= 0"
+
+      - name: total_amount
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "total_amount >= 0"
+
+      - name: trip_distance
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "trip_distance >= 0"
+
+      - name: tpep_dropoff_datetime
+        tests:
+          - dbt_utils.expression_is_true:
+              expression: "tpep_dropoff_datetime > tpep_pickup_datetime"
