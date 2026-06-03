@@ -1,19 +1,25 @@
-# Modèle de connexion dbt → Snowflake pour le DEV LOCAL (auth navigateur / MFA).
+# Modèle de connexion dbt → Snowflake pour le DEV LOCAL (auth par clé RSA / snowflake_jwt).
 #
-#   1) Copie ce fichier :            cp profiles.yml.example ~/.dbt/profiles.yml
-#   2) Remplace <TON_ORG-TON_ACCOUNT> et <TON_USER> par TES infos (cf. docs/onboarding.md).
+#   1) Génère ta clé RSA et pose-la sur ton user — voir docs/onboarding.md (étape 3).
+#   2) Copie ce fichier :            cp profiles.yml.example ~/.dbt/profiles.yml
+#   3) Exporte tes 3 variables d'env (account, user, chemin de la clé) AVANT `dbt` :
+#        export SNOWFLAKE_ACCOUNT="<TON_ORG-TON_ACCOUNT>"     # ex. TPWBVCJ-YT98088
+#        export SNOWFLAKE_USER="<TON_USER>"                   # ton user Snowflake (PAS ton email)
+#        export SNOWFLAKE_PRIVATE_KEY_PATH="$HOME/.snowflake/nyc_taxi_key.p8"
 #
-# `externalbrowser` ouvre le navigateur pour le login MFA → AUCUN secret, mot de passe
-# ni clé en clair ici. (La CI, elle, utilise une clé RSA via secrets GitHub, pas ce fichier.)
+# `snowflake_jwt` s'authentifie avec ta clé privée → AUCUN mot de passe ni secret en clair ici.
+# (La CI utilise la même méthode via secrets GitHub.) ⚠️ `externalbrowser` (SSO/SAML) NE marche PAS
+# sur nos comptes trial isolés : ils n'ont pas de fournisseur d'identité → erreur SAML.
 
 nyc_taxi:
   target: dev
   outputs:
     dev:
       type: snowflake
-      account: "<TON_ORG-TON_ACCOUNT>"   # ex. TPWBVCJ-YT98088 — Snowsight → View account details
-      user: "<TON_USER>"                 # ton nom d'utilisateur Snowflake (PAS ton email)
-      authenticator: externalbrowser
+      account: "{{ env_var('SNOWFLAKE_ACCOUNT') }}"
+      user: "{{ env_var('SNOWFLAKE_USER') }}"
+      authenticator: snowflake_jwt
+      private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH') }}"
       role: ACCOUNTADMIN
       database: NYC_TAXI_DB
       warehouse: NYC_TAXI_WH
