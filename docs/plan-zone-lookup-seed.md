@@ -119,8 +119,9 @@ group by 1, 2, 3, 4
       - name: pu_location_id
         tests:
           - relationships:
-              to: ref('taxi_zone_lookup')
-              field: locationid
+              arguments:
+                to: ref('taxi_zone_lookup')
+                field: locationid
               config:
                 severity: warn        # passer en error une fois confirmé propre
 ```
