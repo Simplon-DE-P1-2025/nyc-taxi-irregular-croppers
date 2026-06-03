@@ -17,6 +17,12 @@ dev = [
     "ruff>=0.15.15",
 ]
 
+[tool.uv]
+# Toujours utiliser un Python téléchargé par uv (python-build-standalone),
+# jamais un pyenv/conda local potentiellement compilé sans _bz2 / _lzma / _sqlite3.
+# Garantit le même interpréteur complet pour toute l'équipe.
+python-preference = "only-managed"
+
 [tool.ruff]
 line-length = 120
 target-version = "py312"
