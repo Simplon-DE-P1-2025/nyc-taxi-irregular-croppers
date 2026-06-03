@@ -9,6 +9,21 @@ la connexion `snow` s'appelle **`projet7` pour tout le monde**, mais chacun la f
 - [`uv`](https://docs.astral.sh/uv/) et la **Snowflake CLI** (`snow`) installés.
 - `openssl` (pour générer la clé RSA, étape 3).
 
+> 💡 **Pas besoin d'installer Python toi-même.** `uv sync` télécharge et gère sa propre
+> version de Python (3.12, cf. `.python-version`). Le projet est configuré en
+> `python-preference = "only-managed"` : uv **ignore** volontairement un éventuel
+> `pyenv`/`conda` local — ces Python compilés à la main sont souvent incomplets
+> (modules `_bz2`, `_lzma`, `_sqlite3` manquants → `dbt` plante au démarrage).
+>
+> ⚠️ **Désactive tout environnement actif avant de commencer** (`conda deactivate`,
+> ou `deactivate` si un `venv` est activé). Sinon tu verras un avertissement
+> `VIRTUAL_ENV … does not match the project environment` : uv l'ignore, mais autant
+> partir propre.
+>
+> 🐧 **Sous WSL : clone le repo côté Linux (`~/...`), pas sous `/mnt/c/...`.** Sur un
+> disque Windows monté, `uv` ne peut pas faire de hardlink (install lente, copie
+> intégrale) — `~/projets/nyc-taxi-irregular-croppers` est bien plus rapide.
+
 > **Auth = paire de clés RSA** (`snowflake_jwt`), pour le dev local **et** la CI.
 > ⚠️ N'utilise **pas** `externalbrowser` : c'est du SSO fédéré (SAML) qui exige un fournisseur
 > d'identité (Okta, Azure AD…) configuré sur le compte. Nos comptes trial isolés n'en ont pas →
@@ -91,6 +106,10 @@ Dans **Snowsight** (l'interface web Snowflake), une fois connecté à ton compte
   (issue #4). **DEV ONLY** (il fait un `TRUNCATE`).
 - **Modèles dbt** : tant que #13-16 ne sont pas implémentés, ce sont des stubs (`select 1`) →
   le `dbt build` valide la *chaîne*, pas encore la logique métier.
+- **`ModuleNotFoundError: No module named '_bz2'`** (ou `_lzma`, `_sqlite3`) au lancement de
+  `dbt` = ton `.venv` a été créé avec un Python `pyenv`/`conda` incomplet. Repars propre depuis
+  la **racine** du projet : `uv python install 3.12 && rm -rf .venv && uv sync`. La config
+  `python-preference = "only-managed"` (pyproject) force désormais un Python uv complet.
 
 ## Workflow d'équipe
 Branches + PR (`main` protégée), Kanban GitHub Projects, `Closes #N` dans les PR.
