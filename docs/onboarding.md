@@ -5,8 +5,14 @@ la connexion `snow` s'appelle **`projet7` pour tout le monde**, mais chacun la f
 **son** compte. C'est ce qui fait tourner le même code à l'identique chez les 4.
 
 ## Prérequis
-- Compte Snowflake trial (**AWS / eu-west-1 / Standard**, cf. `kickoff-equipe.md`), MFA activée.
+- Compte Snowflake trial (**AWS / eu-west-1 / Standard**, cf. `kickoff-equipe.md`).
 - [`uv`](https://docs.astral.sh/uv/) et la **Snowflake CLI** (`snow`) installés.
+- `openssl` (pour générer la clé RSA, étape 3).
+
+> **Auth = paire de clés RSA** (`snowflake_jwt`), pour le dev local **et** la CI.
+> ⚠️ N'utilise **pas** `externalbrowser` : c'est du SSO fédéré (SAML) qui exige un fournisseur
+> d'identité (Okta, Azure AD…) configuré sur le compte. Nos comptes trial isolés n'en ont pas →
+> `externalbrowser` renvoie une **erreur SAML**. La clé RSA est la seule méthode qui marche ici.
 
 ## Étapes
 
@@ -18,19 +24,36 @@ cd nyc-taxi-irregular-croppers
 # 2) Environnement Python (dépendances verrouillées)
 uv sync
 
-# 3) Créer SA connexion snow (nom imposé : projet7 ; compte = le sien)
-#    En local, auth navigateur (MFA) = le plus simple, pas de clé RSA à gérer.
-#    ⚠️ Aux invites « Enter password / host / port / region / private key… » → laisser VIDE (Entrée) :
-#       avec externalbrowser, seuls account + user comptent. Voir « Où trouver tes infos » plus bas.
+# 3) Générer SA clé RSA + créer SA connexion snow (nom imposé : projet7 ; compte = le sien)
+#
+#  a) Générer la paire de clés (clé privée .p8 + clé publique .pub) :
+mkdir -p ~/.snowflake
+openssl genrsa 2048 | openssl pkcs8 -topk8 -inform PEM -out ~/.snowflake/nyc_taxi_key.p8 -nocrypt
+openssl rsa -in ~/.snowflake/nyc_taxi_key.p8 -pubout -out ~/.snowflake/nyc_taxi_key.pub
+chmod 600 ~/.snowflake/nyc_taxi_key.p8
+#  → la clé publique SUR UNE LIGNE (à coller dans Snowsight à l'étape b) :
+grep -v "PUBLIC KEY" ~/.snowflake/nyc_taxi_key.pub | tr -d '\n'; echo
+
+#  b) Poser la clé publique sur ton user : dans Snowsight (https://app.snowflake.com),
+#     ouvre un Worksheet en rôle ACCOUNTADMIN et exécute (garde les guillemets autour du user,
+#     surtout s'il commence par un chiffre, ex. "5AMCHAKA") :
+#        SELECT CURRENT_USER();                                    -- ton user EXACT
+#        ALTER USER "<SON_USER>" SET RSA_PUBLIC_KEY='<CLE_PUBLIQUE_UNE_LIGNE>';
+
+#  c) Créer la connexion (account = le sien ; cf. « Où trouver tes infos » plus bas) :
 snow connection add \
   --connection-name projet7 \
   --account <SON_ORG-SON_ACCOUNT> \
   --user <SON_USER> \
-  --authenticator externalbrowser \
+  --authenticator SNOWFLAKE_JWT \
+  --private-key "$HOME/.snowflake/nyc_taxi_key.p8" \
   --warehouse NYC_TAXI_WH \
   --database NYC_TAXI_DB \
-  --role ACCOUNTADMIN
-snow connection test -c projet7          # ouvre le navigateur pour le login MFA
+  --role ACCOUNTADMIN \
+  --no-interactive
+snow connection test -c projet7
+#  ⏳ « JWT token is invalid » juste après la pose de la clé = propagation (1-2 min), réessaie.
+#  ⚠️ « warehouse does not exist » = normal tant que l'étape 4 n'est pas faite : l'AUTH, elle, marche.
 
 # 4) Créer SON infra (idempotent) + données de dev
 snow sql -c projet7 -f snowflake/01_setup_infra.sql
@@ -38,8 +61,10 @@ snow sql -c projet7 -f snowflake/seed_dev_sample.sql
 
 # 5) dbt : SON profil de dev, puis build
 mkdir -p ~/.dbt && cp profiles.yml.example ~/.dbt/profiles.yml
-#   → éditer ~/.dbt/profiles.yml : remplacer <TON_ORG-TON_ACCOUNT> et <TON_USER> (cf. tableau ci-dessous).
-#     Déjà en externalbrowser : aucun mot de passe / clé / variable d'env à gérer.
+#   → le profil lit 3 variables d'env (compte = le sien) : exporte-les avant dbt
+export SNOWFLAKE_ACCOUNT="<SON_ORG-SON_ACCOUNT>"          # cf. tableau ci-dessous
+export SNOWFLAKE_USER="<SON_USER>"
+export SNOWFLAKE_PRIVATE_KEY_PATH="$HOME/.snowflake/nyc_taxi_key.p8"
 cd dbt_nyc_taxi
 uv run dbt deps
 uv run dbt build       # construit staging → marts sur SON compte, contre le seed
@@ -59,8 +84,9 @@ Dans **Snowsight** (l'interface web Snowflake), une fois connecté à ton compte
 
 ## Bon à savoir
 - **`projet7`** = même *nom* pour tous, branché sur **son** compte (comptes isolés → pas de collision).
-- **RSA vs navigateur** : `externalbrowser` (MFA) suffit en local. La **clé RSA** ne sert qu'à la **CI**
-  (login headless, sur le compte de référence) — inutile de la générer pour du dev local.
+- **Clé RSA = standard partout** : même méthode (`snowflake_jwt`) en local et en CI. `externalbrowser`
+  (SSO/SAML) **ne fonctionne pas** sur nos comptes trial isolés (pas de fournisseur d'identité →
+  erreur SAML). La clé reste sur ta machine (`~/.snowflake/`, jamais committée).
 - **`seed_dev_sample.sql`** = fixture de dev (~15 lignes) pour développer dbt **sans attendre l'ingestion réelle**
   (issue #4). **DEV ONLY** (il fait un `TRUNCATE`).
 - **Modèles dbt** : tant que #13-16 ne sont pas implémentés, ce sont des stubs (`select 1`) →
