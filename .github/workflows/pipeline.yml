@@ -1,15 +1,33 @@
 name: NYC Taxi Pipeline
 
-# Pipeline NYC Taxi — base reproductible : connexion Snowflake (clé RSA) + setup infra.
-# On écrit la clé privée (secret) sur le runner, on configure la connexion `snow`
-# par JWT, on TESTE la connexion, puis on exécute le SQL d'infra (idempotent).
-# À VENIR (étape 4, quand la table RAW existera) : ingestion + dbt build, + un `schedule` mensuel.
+# Pipeline NYC Taxi de bout en bout : connexion Snowflake (clé RSA) → setup infra
+# → ingestion (download + PUT stage + COPY RAW) → dbt build (seed + modèles + tests).
+# Idempotent : le setup et le COPY (load-history) se rejouent sans dégât.
+#
+# Déclenchement MANUEL (workflow_dispatch) : le pipeline touche Snowflake et consomme
+# des crédits, on ne l'automatise pas par défaut. Un bloc `schedule` mensuel est fourni
+# en commentaire ci-dessous, prêt à décommenter.
 #
 # Secrets de dépôt requis (Settings → Secrets and variables → Actions) :
 #   SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER, SNOWFLAKE_PRIVATE_KEY (contenu du .p8)
 
 on:
-  workflow_dispatch:   # lancement manuel (onglet Actions) — pas d'auto : le pipeline touche Snowflake
+  workflow_dispatch:
+    inputs:
+      annees:
+        description: "Année(s) à ingérer (séparées par un espace)"
+        required: false
+        default: "2024"
+      mois:
+        description: "Mois à ingérer, 1-12 (séparés par un espace)"
+        required: false
+        default: "1"
+
+  # schedule mensuel (DÉSACTIVÉ — consomme des crédits sans surveillance).
+  # Pour l'activer : décommenter, et fixer annees/mois via les variables INGEST_*
+  # ci-dessous (les inputs workflow_dispatch ne s'appliquent pas aux runs `schedule`).
+  # schedule:
+  #   - cron: "0 6 5 * *"   # le 5 de chaque mois à 06:00 UTC
 
 jobs:
   build:
@@ -18,6 +36,9 @@ jobs:
       SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
       SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
       SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/snowflake_key.p8
+      # Fallback pour les runs `schedule` (où les inputs sont vides).
+      INGEST_ANNEES: ${{ inputs.annees || '2024' }}
+      INGEST_MOIS: ${{ inputs.mois || '1' }}
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v4
@@ -52,3 +73,18 @@ jobs:
 
       - name: Setup infra Snowflake (idempotent)
         run: snow sql -c projet7 -f snowflake/01_setup_infra.sql
+
+      - name: Ingestion (download → PUT stage → COPY RAW)
+        # uv run : `python3` dans ingest.sh résout vers le venv (deps de download_data.py).
+        run: uv run -- bash scripts/ingest.sh --annees $INGEST_ANNEES --mois $INGEST_MOIS
+
+      - name: Installer le profil dbt (clé RSA, via env vars)
+        run: |
+          mkdir -p ~/.dbt
+          cp profiles.yml.example ~/.dbt/profiles.yml
+
+      - name: dbt build (seed + modèles + tests)
+        working-directory: dbt_nyc_taxi
+        run: |
+          uv run dbt deps
+          uv run dbt build --target dev

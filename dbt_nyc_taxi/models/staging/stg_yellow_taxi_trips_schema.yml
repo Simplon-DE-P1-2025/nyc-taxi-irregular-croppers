@@ -1,0 +1,86 @@
+version: 2
+
+models:
+  - name: stg_yellow_taxi_trips
+    description: >
+      Couche STAGING des trajets NYC Taxi.
+      Cette vue applique les règles de nettoyage et de validation
+      avant les calculs métier réalisés dans la couche intermediate.
+
+    columns:
+
+      # CLÉS OBLIGATOIRES
+
+      - name: pickup_datetime
+        description: Date et heure de prise en charge du passager.
+        tests:
+          - not_null
+
+      - name: pu_location_id
+        description: Identifiant TLC de la zone de départ.
+        tests:
+          - not_null
+
+      - name: do_location_id
+        description: Identifiant TLC de la zone d'arrivée.
+        tests:
+          - not_null
+
+      - name: fare_amount
+        description: Tarif de base de la course hors taxes et suppléments.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "fare_amount >= 0"
+
+      - name: total_amount
+        description: Montant total payé par le client.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "total_amount >= 0"
+
+      # VALEURS AUTORISÉES
+
+      - name: payment_type
+        description: >
+          Type de paiement TLC.
+          0=Flex Fare, 1=Carte bancaire, 2=Espèces,
+          3=No charge, 4=Dispute, 5=Unknown, 6=Voided trip.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [0, 1, 2, 3, 4, 5, 6]
+
+      - name: rate_code_id
+        description: >
+          Code tarifaire TLC.
+          1=Standard, 2=JFK, 3=Newark, 4=Nassau/Westchester,
+          5=Negotiated fare, 6=Group ride, 99=Unknown.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 3, 4, 5, 6, 99]
+
+      - name: vendor_id
+        description: Identifiant du fournisseur TLC.
+        tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2, 6, 7]
+
+      - name: trip_distance
+        description: Distance parcourue pendant la course en miles.
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "trip_distance >= 0"
+
+      - name: dropoff_datetime
+        description: Date et heure de dépose du passager.
+        tests:
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "dropoff_datetime > pickup_datetime"

@@ -1,0 +1,18 @@
+version: 2
+
+seeds:
+  - name: taxi_zone_lookup
+    description: >
+      Référentiel officiel TLC des zones de taxi (265 lignes, grille figée).
+      Source : https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
+      Jointure 1:1 sur LocationID ↔ pulocationid / dolocationid.
+    config:
+      column_types:
+        LocationID: integer
+        Borough: varchar
+        Zone: varchar
+        service_zone: varchar
+    columns:
+      - name: LocationID
+        description: "Clé de zone TLC (1..265). Unique et non nul (clé de jointure)."
+        tests: [unique, not_null]
