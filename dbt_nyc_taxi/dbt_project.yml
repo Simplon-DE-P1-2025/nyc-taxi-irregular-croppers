@@ -30,3 +30,9 @@ models:
     marts:
       +materialized: table
       +schema: FINAL
+
+# Seeds (lookups versionnés dans le repo) → STAGING, sinon ils tomberaient
+# dans le schéma du profil (PUBLIC) faute de config explicite.
+seeds:
+  nyc_taxi:
+    +schema: STAGING
