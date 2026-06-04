@@ -34,7 +34,7 @@ lignes écartées, cf. `docs/exploration-donnees.md`).
 - `fare_amount > 0`, `total_amount > 0`, `tip_amount >= 0` (montants cohérents)
 - `tpep_pickup_datetime < tpep_dropoff_datetime` (chronologie)
 - `trip_distance between 0.1 and 100` (anti distance nulle / outliers > 100 mi)
-- `pulocationid` / `dolocationid` NOT NULL (zones obligatoires)
+- `pu_location_id` / `do_location_id` NOT NULL (zones obligatoires)
 
 **Choix expliqués :**
 - **On garde toutes les composantes tarifaires** (`extra, mta_tax, tolls_amount,
@@ -48,6 +48,11 @@ lignes écartées, cf. `docs/exploration-donnees.md`).
   des **timestamps aberrants** (années 2002, 2098…). Sans ce filtre, `daily_summary` produirait
   des lignes parasites pour des dates farfelues.
 - **Schema drift** : `cbd_congestion_fee` n'existe qu'à partir de 2025 → nullable avant.
+- **Renommage snake_case** : les colonnes « collées » de la source (`VendorID`, `RatecodeID`,
+  `PULocationID`, `DOLocationID`) sont aliasées en sortie de staging (`vendor_id`, `ratecode_id`,
+  `pu_location_id`, `do_location_id`). La couche **RAW garde les noms TLC d'origine** ; le snake_case
+  est la **convention de l'aval** (staging → intermediate → marts). C'est pour ça que `_sources.yml`
+  et le DDL RAW restent en PascalCase, mais que tout le reste est en snake_case.
 
 ---
 
@@ -77,7 +82,7 @@ Table enrichie : durée, vitesse, % pourboire, dimensions et catégories tempore
 
 - **`daily_summary`** — 1 ligne/jour : `trip_count`, `avg_distance`, `total_revenue`,
   `avg_revenue_per_trip`, `avg_tip`.
-- **`zone_analysis`** — 1 ligne/`pulocationid` : volume, distance/revenu moyens, revenu total
+- **`zone_analysis`** — 1 ligne/`pu_location_id` : volume, distance/revenu moyens, revenu total
   (KPI top 10 zones). *TODO restitution : joindre le lookup TLC (`taxi_zone_lookup`) pour exposer
   Borough/Zone au lieu des ID bruts.*
 - **`hourly_patterns`** — 1 ligne/heure (0–23) : volume, distance/revenu moyens, vitesse moyenne.
@@ -117,7 +122,7 @@ la **seule** cible rentable serait `int_trip_metrics` en incrémental (relation 
 |---|---|
 | staging | `not_null` (montants, datetime, zones), `accepted_values` sur `payment_type` |
 | intermediate | `accepted_range` sur `trip_duration_minutes` (> 0) et `avg_speed_mph` (0–100, **garde de non-régression**) ; `tip_percentage >= 0` (NULL toléré) |
-| marts | `unique` + `not_null` sur les grains (`trip_date`, `pickup_hour`, `pulocationid`), `accepted_range` (`trip_count` > 0, `pickup_hour` ∈ [0,23]) |
+| marts | `unique` + `not_null` sur les grains (`trip_date`, `pickup_hour`, `pu_location_id`), `accepted_range` (`trip_count` > 0, `pickup_hour` ∈ [0,23]) |
 
 Le test `avg_speed_mph <= 100` est volontairement « tautologique » au regard du filtre du modèle :
 il sert de **garde-fou** si quelqu'un retire le `WHERE` un jour.
