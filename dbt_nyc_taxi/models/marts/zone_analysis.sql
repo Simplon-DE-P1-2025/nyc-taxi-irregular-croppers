@@ -7,14 +7,32 @@ with source as (
 
     select * from {{ ref('int_trip_metrics') }}
 
+),
+
+zones as (
+
+    select * from {{ ref('taxi_zone_lookup') }}
+
 )
 
 select
-    pu_location_id,
-    count(*)                           as nb_trajets,
-    round(avg(trip_distance), 2)       as distance_moy,
-    round(avg(total_amount), 2)        as revenu_moyen,
-    round(sum(total_amount), 2)        as revenu_total
+    s.pu_location_id,
+    z.borough,
+    z.zone,
+    z.service_zone,
+    count(*)                       as nb_trajets,
+    round(avg(s.trip_distance), 2) as distance_moy,
+    round(avg(s.total_amount), 2)  as revenu_moyen,
+    round(sum(s.total_amount), 2)  as revenu_total
 
-from source
-group by 1
+from source s
+left join zones z
+    on s.pu_location_id = z.locationid
+
+group by
+    s.pu_location_id,
+    z.borough,
+    z.zone,
+    z.service_zone
+
+order by nb_trajets desc
