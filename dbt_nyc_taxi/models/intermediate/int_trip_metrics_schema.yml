@@ -1,0 +1,45 @@
+# Tests de qualité de la couche INTERMEDIATE (issue #15).
+# Ce fichier déclare les contrôles automatiques (dbt test) sur les métriques
+# calculées dans int_trip_metrics : bornes de durée, vitesse et taux de pourboire.
+
+version: 2
+
+models:
+  - name: int_trip_metrics
+    description: >
+      Couche INTERMEDIATE des trajets NYC Taxi.
+      Enrichit les trajets nettoyés avec les métriques métier :
+      durée, vitesse moyenne, taux de pourboire, dimensions
+      temporelles et catégorisation (issue #15).
+
+    columns:
+
+      - name: trip_duration_minutes
+        description: Durée du trajet en minutes (calcul en secondes/60 pour la précision).
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                inclusive: false
+
+      - name: avg_speed_mph
+        description: Vitesse moyenne du trajet en miles par heure.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+                inclusive: true
+
+      - name: tip_percentage
+        description: >
+          Taux de pourboire en pourcentage du tarif.
+          Calculé uniquement pour les paiements par carte (payment_type = 1) ;
+          NULL pour les autres modes car les pourboires espèces ne sont pas
+          enregistrés par TLC.
+        tests:
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 100
+                inclusive: true
