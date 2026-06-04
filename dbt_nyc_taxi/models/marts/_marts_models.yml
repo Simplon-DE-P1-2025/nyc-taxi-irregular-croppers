@@ -22,9 +22,10 @@ models:
       - name: avg_revenue_per_trip
         description: "Revenu moyen généré par trajet."
         tests:
-          - dbt_utils.accepted_range: # 💡 Ajout du préfixe et nettoyage des arguments
-              min_value: 0
-              inclusive: false
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                inclusive: false
 
       - name: avg_tip
         description: "Pourboire moyen (attention, inclut les montants à 0 des paiements en espèces)."
@@ -37,9 +38,10 @@ models:
         tests:
           - not_null
           - unique
-          - dbt_utils.accepted_range: # 💡 Ajout du préfixe et nettoyage des arguments
-              min_value: 0
-              max_value: 23
+          - dbt_utils.accepted_range:
+              arguments:
+                min_value: 0
+                max_value: 23
 
       - name: trip_count
         description: "Nombre total de trajets initiés durant cette heure."
@@ -65,6 +67,12 @@ models:
         tests:
           - not_null
           - unique
+          - relationships:
+              arguments:
+                to: ref('taxi_zone_lookup')
+                field: locationid
+              config:
+                severity: warn
 
       - name: borough
         description: Borough associé à la zone TLC.
@@ -90,34 +98,34 @@ models:
                   - N/A
                   - Unknown
 
-      - name: nb_trajets
+      - name: total_trips
         description: Nombre total de trajets au départ de la zone.
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "nb_trajets > 0"
+                expression: "total_trips > 0"
 
-      - name: distance_moy
+      - name: avg_distance
         description: Distance moyenne des trajets en miles.
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "distance_moy >= 0"
+                expression: "avg_distance >= 0"
 
-      - name: revenu_moyen
+      - name: avg_revenue
         description: Montant moyen des trajets.
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "revenu_moyen >= 0"
+                expression: "avg_revenue >= 0"
 
-      - name: revenu_total
+      - name: total_revenue
         description: Revenu total généré par la zone.
         tests:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "revenu_total >= 0"
+                expression: "total_revenue >= 0"
