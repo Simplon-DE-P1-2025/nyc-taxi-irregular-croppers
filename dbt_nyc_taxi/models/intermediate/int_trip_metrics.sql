@@ -38,8 +38,8 @@ metriques as (
 
         -- dimensions temporelles
         hour(pickup_datetime)  as pickup_hour,
-        day(pickup_datetime)   as day,
-        month(pickup_datetime) as month,
+        day(pickup_datetime)   as pickup_day,
+        month(pickup_datetime) as pickup_month,
         dayname(pickup_datetime) as day_of_week,
 
         -- categorie de distance (seuils a valider en equipe)
