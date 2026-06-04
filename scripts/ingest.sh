@@ -45,12 +45,23 @@ echo ""
 echo "------------------------------------------------------------"
 
 # --- ETAPE 2 : Envoi des fichiers sur le Stage Snowflake ---
+# Le PUT ne tourne que s'il y a des parquet locaux : si la TLC est
+# indisponible (403/404 passager), le stage Snowflake fait foi et le
+# COPY de l'etape 3 reste idempotent — le pipeline ne depend plus du
+# reseau TLC pour les fichiers deja stages.
 echo "Etape 2 : Chargement des fichiers (PUT) dans le Stage Snowflake..."
-snow sql -c $CONNEXION_SNOWFLAKE -q "
-  USE DATABASE NYC_TAXI_DB;
-  USE SCHEMA RAW;
-  PUT file://data/raw/*.parquet @NYC_TAXI_DB.RAW.nyc_taxi_stage AUTO_COMPRESS=FALSE OVERWRITE=TRUE;
-"
+shopt -s nullglob
+fichiers_parquet=(data/raw/*.parquet)
+shopt -u nullglob
+if [ ${#fichiers_parquet[@]} -eq 0 ]; then
+    echo "Aucun parquet local (TLC indisponible ?) : PUT saute, le stage existant fait foi."
+else
+    snow sql -c $CONNEXION_SNOWFLAKE -q "
+      USE DATABASE NYC_TAXI_DB;
+      USE SCHEMA RAW;
+      PUT file://data/raw/*.parquet @NYC_TAXI_DB.RAW.nyc_taxi_stage AUTO_COMPRESS=FALSE OVERWRITE=TRUE;
+    "
+fi
 
 echo "------------------------------------------------------------"
 
