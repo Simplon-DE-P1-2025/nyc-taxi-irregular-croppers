@@ -6,7 +6,7 @@
 SELECT
     date(pickup_datetime)::DATE AS trip_date,
     COUNT(*) AS trip_count,
-    AVG(trip_distance) AS avg_distance,
+    round(AVG(trip_distance), 2) AS avg_distance,
     SUM(total_amount) AS total_revenue,
     SUM(total_amount) / COUNT(*) AS avg_revenue_per_trip,
     AVG(tip_amount) AS avg_tip
