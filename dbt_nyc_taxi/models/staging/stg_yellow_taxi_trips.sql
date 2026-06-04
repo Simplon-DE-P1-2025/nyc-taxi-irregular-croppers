@@ -73,7 +73,7 @@ nettoye as (
 
     where
         -- montants (fare >= 0 : on accepte les courses gratuites type 'No charge')
-        fare_amount >= 0
+        fare_amount > 0
         and total_amount > 0
         and tip_amount >= 0
 
@@ -86,10 +86,9 @@ nettoye as (
 
         -- duree plausible (plafond 5h = anti-aberration, large pour les bouchons)
         and datediff('minute', tpep_pickup_datetime, tpep_dropoff_datetime) <= 300
-       
+
         -- code tarif : on conserve NULL (12,5 M lignes) et 99 — les libellés les rendent lisibles
         and (ratecodeid between 1 and 6 or ratecodeid is null or ratecodeid = 99)
-
 
         -- colonnes critiques non nulles + periode projet
         and pulocationid is not null
