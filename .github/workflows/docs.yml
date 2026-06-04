@@ -1,0 +1,81 @@
+name: dbt docs
+
+# Documentation dbt auto-générée (option avancée du brief) : à chaque push sur main
+# touchant le projet dbt, génère le site `dbt docs` (catalogue réel, lu sur Snowflake)
+# et le publie sur GitHub Pages.
+#
+# Pré-requis (une fois) : Settings → Pages → Source = "GitHub Actions".
+# Secrets : les mêmes que pipeline.yml (SNOWFLAKE_ACCOUNT, SNOWFLAKE_USER,
+# SNOWFLAKE_PRIVATE_KEY).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dbt_nyc_taxi/**"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement Pages à la fois.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/snowflake_key.p8
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v5
+
+      - name: Installer uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Installer les dépendances (verrouillées)
+        run: uv sync
+
+      - name: Écrire la clé privée
+        run: |
+          printf '%s' "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > "$SNOWFLAKE_PRIVATE_KEY_PATH"
+          chmod 600 "$SNOWFLAKE_PRIVATE_KEY_PATH"
+
+      - name: Installer le profil dbt (clé RSA, via env vars)
+        run: |
+          mkdir -p ~/.dbt
+          cp profiles.yml.example ~/.dbt/profiles.yml
+
+      - name: dbt docs generate (catalogue réel + page unique autonome)
+        working-directory: dbt_nyc_taxi
+        run: |
+          uv run dbt deps
+          uv run dbt docs generate --target dev --static
+
+      - name: Préparer le site
+        run: |
+          mkdir -p _site
+          cp dbt_nyc_taxi/target/static_index.html _site/index.html
+
+      - name: Uploader l'artefact Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Déployer sur GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
