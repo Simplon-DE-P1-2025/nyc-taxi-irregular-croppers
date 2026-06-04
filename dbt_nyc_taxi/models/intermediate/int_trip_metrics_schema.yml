@@ -30,6 +30,10 @@ models:
                 min_value: 0
                 max_value: 100
                 inclusive: true
+              # ~20k trajets (0,02 %) à durée quasi nulle → vitesses aberrantes.
+              # WARN le temps de trancher la règle de filtrage en équipe (cf. issue).
+              config:
+                severity: warn
 
       - name: tip_percentage
         description: >
