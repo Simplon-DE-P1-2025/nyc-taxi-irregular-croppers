@@ -6,7 +6,7 @@
 ) }}
 
 SELECT
-    EXTRACT(HOUR FROM pickup_datetime) AS pickup_hour,
+    pickup_hour,
     COUNT(*) AS trip_count,
     AVG(trip_distance) AS avg_distance,
     AVG(total_amount) AS avg_revenue,
