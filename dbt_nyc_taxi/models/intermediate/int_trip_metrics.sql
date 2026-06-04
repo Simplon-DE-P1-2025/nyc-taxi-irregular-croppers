@@ -32,7 +32,9 @@ metriques as (
         round(trip_distance / nullif(trip_duration_minutes / 60.0, 0), 2) as avg_speed_mph,
 
         -- taux de pourboire % (null si fare = 0, course gratuite acceptee en #13)
-        round(tip_amount / nullif(fare_amount, 0) * 100, 2) as tip_percentage,
+        case when payment_type = 1
+             then round(tip_amount / nullif(fare_amount, 0) * 100, 2)
+        end as tip_percentage,
 
         -- dimensions temporelles
         hour(pickup_datetime)  as pickup_hour,
