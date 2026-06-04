@@ -18,8 +18,8 @@ nettoye as (
         trip_distance,
         ratecodeid as rate_code_id,
         store_and_fwd_flag,
-        pulocationid as pickup_location_id,
-        dolocationid as dropoff_location_id,
+        pulocationid as pu_location_id,
+        dolocationid as do_location_id,
         payment_type,
 
         -- montants
