@@ -32,7 +32,7 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "fare_amount >= 0"
+                expression: ">= 0"
 
       - name: total_amount
         description: Montant total payé par le client.
@@ -40,7 +40,7 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "total_amount >= 0"
+                expression: ">= 0"
 
       # VALEURS AUTORISÉES
 
@@ -76,11 +76,11 @@ models:
         tests:
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "trip_distance >= 0"
+                expression: ">= 0"
 
       - name: dropoff_datetime
         description: Date et heure de dépose du passager.
         tests:
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "dropoff_datetime > pickup_datetime"
+                expression: "> pickup_datetime"

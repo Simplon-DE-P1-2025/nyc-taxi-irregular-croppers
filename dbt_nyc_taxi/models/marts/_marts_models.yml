@@ -104,7 +104,7 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "total_trips > 0"
+                expression: "> 0"
 
       - name: avg_distance
         description: Distance moyenne des trajets en miles.
@@ -112,7 +112,7 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "avg_distance >= 0"
+                expression: ">= 0"
 
       - name: avg_revenue
         description: Montant moyen des trajets.
@@ -120,7 +120,7 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "avg_revenue >= 0"
+                expression: ">= 0"
 
       - name: total_revenue
         description: Revenu total généré par la zone.
@@ -128,4 +128,4 @@ models:
           - not_null
           - dbt_utils.expression_is_true:
               arguments:
-                expression: "total_revenue >= 0"
+                expression: ">= 0"
