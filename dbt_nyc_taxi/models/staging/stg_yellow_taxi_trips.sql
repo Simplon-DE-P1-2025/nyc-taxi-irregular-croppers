@@ -18,8 +18,8 @@ nettoye as (
         trip_distance,
         ratecodeid as rate_code_id,
         store_and_fwd_flag,
-        pulocationid as pickup_location_id,
-        dolocationid as dropoff_location_id,
+        pulocationid as pu_location_id,
+        dolocationid as do_location_id,
         payment_type,
 
         -- montants
@@ -86,9 +86,10 @@ nettoye as (
 
         -- duree plausible (plafond 5h = anti-aberration, large pour les bouchons)
         and datediff('minute', tpep_pickup_datetime, tpep_dropoff_datetime) <= 300
+       
+        -- code tarif : on conserve NULL (12,5 M lignes) et 99 — les libellés les rendent lisibles
+        and (ratecodeid between 1 and 6 or ratecodeid is null or ratecodeid = 99)
 
-        -- code tarif valide (1 a 6 ; 99 = null/unknown rejete)
-        and ratecodeid between 1 and 6
 
         -- colonnes critiques non nulles + periode projet
         and pulocationid is not null
