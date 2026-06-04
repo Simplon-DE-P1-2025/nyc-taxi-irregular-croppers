@@ -73,7 +73,7 @@ nettoye as (
 
     where
         -- montants (fare >= 0 : on accepte les courses gratuites type 'No charge')
-        fare_amount >= 0
+        fare_amount > 0
         and total_amount > 0
         and tip_amount >= 0
 
