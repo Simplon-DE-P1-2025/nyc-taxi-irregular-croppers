@@ -4,7 +4,7 @@
 ) }}
 
 SELECT
-    pickup_datetime::DATE AS trip_date,
+    date(pickup_datetime)::DATE AS trip_date,
     COUNT(*) AS trip_count,
     AVG(trip_distance) AS avg_distance,
     SUM(total_amount) AS total_revenue,
