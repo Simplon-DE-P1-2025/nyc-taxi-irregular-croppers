@@ -1,0 +1,54 @@
+version: 2
+
+models:
+  - name: daily_summary
+    description: "Table analytique finale agrégée par jour (grain trip_date) contenant les principaux KPIs."
+    columns:
+      - name: trip_date
+        description: "Date de prise en charge (pickup) du trajet."
+        tests:
+          - not_null
+          - unique
+
+      - name: trip_count
+        description: "Nombre total de trajets sur la journée."
+
+      - name: avg_distance
+        description: "Distance moyenne parcourue (en miles)."
+
+      - name: total_revenue
+        description: "Revenu total cumulé (incluant taxes, suppléments et pourboires)."
+
+      - name: avg_revenue_per_trip
+        description: "Revenu moyen généré par trajet."
+        tests:
+          - dbt_utils.accepted_range: # 💡 Ajout du préfixe et nettoyage des arguments
+              min_value: 0
+              inclusive: false
+
+      - name: avg_tip
+        description: "Pourboire moyen (attention, inclut les montants à 0 des paiements en espèces)."
+
+  - name: hourly_patterns
+    description: "Table analytique finale agrégée par heure (0-23) pour identifier les heures de pointe."
+    columns:
+      - name: pickup_hour
+        description: "Heure de la journée à laquelle le trajet a débuté (comprise entre 0 et 23)."
+        tests:
+          - not_null
+          - unique
+          - dbt_utils.accepted_range: # 💡 Ajout du préfixe et nettoyage des arguments
+              min_value: 0
+              max_value: 23
+
+      - name: trip_count
+        description: "Nombre total de trajets initiés durant cette heure."
+
+      - name: avg_distance
+        description: "Distance moyenne des trajets (en miles) pour cette heure."
+
+      - name: avg_revenue
+        description: "Montant moyen facturé par course sur cette plage horaire."
+
+      - name: avg_speed
+        description: "Vitesse moyenne estimée des trajets (en mph)."
