@@ -1,8 +1,5 @@
 -- int_trip_metrics — durée, vitesse, % pourboire, dimensions temporelles (issue #15)
 -- Squelette : contrat de nom posé pour la CI (dbt parse) et le DAG. À implémenter.
--- int_trip_metrics — durée, vitesse, % pourboire, dimensions temporelles (issue #15)
-
--- int_trip_metrics — durée, vitesse, % pourboire, dimensions temporelles (issue #15)
 
 {{ config(materialized='table') }}
 
@@ -30,14 +27,16 @@ metriques as (
 
         -- vitesse moyenne mph (nullif = securite, ne devrait jamais declencher apres #13)
         round(trip_distance / nullif(trip_duration_minutes / 60.0, 0), 2) as avg_speed_mph,
-
+       
         -- taux de pourboire % (null si fare = 0, course gratuite acceptee en #13)
-        round(tip_amount / nullif(fare_amount, 0) * 100, 2) as tip_percentage,
+        case when payment_type = 1
+             then round(tip_amount / nullif(fare_amount, 0) * 100, 2)
+        end as tip_percentage,
 
         -- dimensions temporelles
         hour(pickup_datetime)  as pickup_hour,
-        day(pickup_datetime)   as day,
-        month(pickup_datetime) as month,
+        day(pickup_datetime)   as pickup_day,
+        month(pickup_datetime) as pickup_month,
         dayname(pickup_datetime) as day_of_week,
 
         -- categorie de distance (seuils a valider en equipe)
