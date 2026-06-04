@@ -52,3 +52,72 @@ models:
 
       - name: avg_speed
         description: "Vitesse moyenne estimée des trajets (en mph)."
+  
+  - name: zone_analysis
+    description: >
+      KPIs agrégés par zone de pickup NYC Taxi.
+      Une ligne représente une zone de départ (pu_location_id).
+
+    columns:
+
+      - name: pu_location_id
+        description: Identifiant TLC de la zone de départ.
+        tests:
+          - not_null
+          - unique
+
+      - name: borough
+        description: Borough associé à la zone TLC.
+        tests:
+          - not_null
+
+      - name: zone
+        description: Nom de la zone TLC.
+        tests:
+          - not_null
+
+      - name: service_zone
+        description: Catégorie de zone TLC.
+        tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - Yellow Zone
+                  - Boro Zone
+                  - Airports
+                  - EWR
+                  - N/A
+                  - Unknown
+
+      - name: nb_trajets
+        description: Nombre total de trajets au départ de la zone.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "nb_trajets > 0"
+
+      - name: distance_moy
+        description: Distance moyenne des trajets en miles.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "distance_moy >= 0"
+
+      - name: revenu_moyen
+        description: Montant moyen des trajets.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "revenu_moyen >= 0"
+
+      - name: revenu_total
+        description: Revenu total généré par la zone.
+        tests:
+          - not_null
+          - dbt_utils.expression_is_true:
+              arguments:
+                expression: "revenu_total >= 0"
