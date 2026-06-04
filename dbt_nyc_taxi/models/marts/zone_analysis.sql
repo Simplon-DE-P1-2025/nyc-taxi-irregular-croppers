@@ -1,4 +1,4 @@
--- zone_analysis — KPIs par zone de pickup, top 10 (issue #30)
+-- zone_analysis — KPIs par zone de pickup (issue #30)
 -- Grain --> 1 ligne = 1 pu_location_id
 
 {{ config(materialized='table') }}
@@ -20,10 +20,10 @@ select
     z.borough,
     z.zone,
     z.service_zone,
-    count(*)                       as nb_trajets,
-    round(avg(s.trip_distance), 2) as distance_moy,
-    round(avg(s.total_amount), 2)  as revenu_moyen,
-    round(sum(s.total_amount), 2)  as revenu_total
+    count(*)                       as total_trips,
+    round(avg(s.trip_distance), 2) as avg_distance,
+    round(avg(s.total_amount), 2)  as avg_revenue,
+    round(sum(s.total_amount), 2)  as total_revenue
 
 from source s
 left join zones z
@@ -34,5 +34,3 @@ group by
     z.borough,
     z.zone,
     z.service_zone
-
-order by nb_trajets desc
