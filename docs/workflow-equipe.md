@@ -50,8 +50,8 @@ git push -u origin feat/staging-nettoyage
 **Secrets à créer une seule fois** (Settings → Secrets and variables → Actions) :
 | Secret | Valeur |
 |---|---|
-| `SNOWFLAKE_ACCOUNT` | l'account identifier du compte de réf. (ex. `TPWBVCJ-YT98088`) |
-| `SNOWFLAKE_USER` | le user (ex. `5AMCHAKA`) |
+| `SNOWFLAKE_ACCOUNT` | l'account identifier du compte de réf. (ex. `ABCDEFG-AB12345`) |
+| `SNOWFLAKE_USER` | le user (ex. `JDUPONT`) |
 | `SNOWFLAKE_PRIVATE_KEY` | le **contenu** du fichier `.p8` (clé privée, multi-lignes) |
 
 **Ce que la CI fait à chaque exécution** (sur push `main`, PR, ou bouton « Run workflow ») :

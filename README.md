@@ -78,7 +78,7 @@ Principes : **ELT** (on charge brut, on transforme dans l'entrepôt), **idempote
 | **Alexandre** | ingestion · marts |
 
 Méthode : une **issue** par tâche, une branche, une **PR relue** (main protégée, 1 approbation),
-CI verte avant merge, board GitHub Projects. 34 PR mergées, 35 reviews, 113 commits.
+CI verte avant merge, board GitHub Projects. 35 PR mergées, 40 reviews, 114 commits.
 
 > ⚠️ Règles d'or : jamais de secret/clé/donnée dans Git · `main` protégée · chaque membre
 > travaille sur **son** compte Snowflake (les secrets du repo pointent celui de la démo).
