@@ -51,7 +51,7 @@ grep -v "PUBLIC KEY" ~/.snowflake/nyc_taxi_key.pub | tr -d '\n'; echo
 
 #  b) Poser la clé publique sur ton user : dans Snowsight (https://app.snowflake.com),
 #     ouvre un Worksheet en rôle ACCOUNTADMIN et exécute (garde les guillemets autour du user,
-#     surtout s'il commence par un chiffre, ex. "5AMCHAKA") :
+#     surtout s'il commence par un chiffre, ex. "7JDUPONT") :
 #        SELECT CURRENT_USER();                                    -- ton user EXACT
 #        ALTER USER "<SON_USER>" SET RSA_PUBLIC_KEY='<CLE_PUBLIQUE_UNE_LIGNE>';
 
@@ -90,7 +90,7 @@ Dans **Snowsight** (l'interface web Snowflake), une fois connecté à ton compte
 
 | À renseigner | Où le trouver |
 |---|---|
-| `<SON_ORG-SON_ACCOUNT>` (`--account`) | Bas-gauche → clic sur ton **nom de compte** → **View account details** → champ **Account / Account Identifier**, format `ORGNAME-ACCOUNTNAME` (ex. `TPWBVCJ-YT98088`). |
+| `<SON_ORG-SON_ACCOUNT>` (`--account`) | Bas-gauche → clic sur ton **nom de compte** → **View account details** → champ **Account / Account Identifier**, format `ORGNAME-ACCOUNTNAME` (ex. `ABCDEFG-AB12345`). |
 | `<SON_USER>` (`--user`) | Ton **nom d'utilisateur** Snowflake (bas-gauche → ton profil), **pas** ton email. |
 | `--role` / `--warehouse` / `--database` | Déjà fixés par convention : `ACCOUNTADMIN` / `NYC_TAXI_WH` / `NYC_TAXI_DB` (ces deux derniers sont créés par `01_setup_infra.sql` à l'étape 4). |
 
@@ -104,8 +104,8 @@ Dans **Snowsight** (l'interface web Snowflake), une fois connecté à ton compte
   erreur SAML). La clé reste sur ta machine (`~/.snowflake/`, jamais committée).
 - **`seed_dev_sample.sql`** = fixture de dev (~15 lignes) pour développer dbt **sans attendre l'ingestion réelle**
   (issue #4). **DEV ONLY** (il fait un `TRUNCATE`).
-- **Modèles dbt** : tant que #13-16 ne sont pas implémentés, ce sont des stubs (`select 1`) →
-  le `dbt build` valide la *chaîne*, pas encore la logique métier.
+- **Modèles dbt** : la chaîne complète est implémentée (staging → `int_trip_metrics` →
+  3 marts + seed `taxi_zone_lookup`) — un `dbt build` exécute 1 seed + 5 modèles + 41 tests.
 - **`ModuleNotFoundError: No module named '_bz2'`** (ou `_lzma`, `_sqlite3`) au lancement de
   `dbt` = ton `.venv` a été créé avec un Python `pyenv`/`conda` incomplet. Repars propre depuis
   la **racine** du projet : `uv python install 3.12 && rm -rf .venv && uv sync`. La config

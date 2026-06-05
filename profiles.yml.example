@@ -3,7 +3,7 @@
 #   1) Génère ta clé RSA et pose-la sur ton user — voir docs/onboarding.md (étape 3).
 #   2) Copie ce fichier :            cp profiles.yml.example ~/.dbt/profiles.yml
 #   3) Exporte tes 3 variables d'env (account, user, chemin de la clé) AVANT `dbt` :
-#        export SNOWFLAKE_ACCOUNT="<TON_ORG-TON_ACCOUNT>"     # ex. TPWBVCJ-YT98088
+#        export SNOWFLAKE_ACCOUNT="<TON_ORG-TON_ACCOUNT>"     # ex. ABCDEFG-AB12345
 #        export SNOWFLAKE_USER="<TON_USER>"                   # ton user Snowflake (PAS ton email)
 #        export SNOWFLAKE_PRIVATE_KEY_PATH="$HOME/.snowflake/nyc_taxi_key.p8"
 #

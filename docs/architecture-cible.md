@@ -4,7 +4,8 @@
 > Ce doc consolide la spec **imposée** + les **points d'attention** repérés (section ⚠️ en bas — à lire avant de coder).
 
 ## Dataset
-- NYC **Yellow** Taxi Trip Data, **~40 M trajets**, **2024 + début 2025**, Parquet mensuels.
+- NYC **Yellow** Taxi Trip Data, Parquet mensuels. Le brief annonce **~40 M trajets** (« 2024 +
+  début 2025 ») ; le pipeline livré ingère **89,9 M lignes** (24 mois : 2024-01 → 2025-12).
 - Source : `https://d37ci6vzurychx.cloudfront.net/trip-data/yellow_tripdata_YYYY-MM.parquet`
 - Data dictionary : NYC TLC.
 

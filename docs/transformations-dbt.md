@@ -27,8 +27,9 @@ yellow_taxi_trips  ──►  stg_yellow_taxi_trips  ──►  int_trip_metrics
 
 ## 1. `stg_yellow_taxi_trips` — nettoyage (couche STAGING)
 
-Vue qui applique les **filtres qualité** du brief, confirmés/chiffrés par l'EDA (~13–14 % des
-lignes écartées, cf. `docs/exploration-donnees.md`).
+Vue qui applique les **filtres qualité** du brief, confirmés par l'EDA. Sur le dataset complet
+(89,9 M lignes, 24 mois), ils écartent **−6,7 %** des lignes ; l'EDA-échantillon (3 mois)
+estimait ~13–14 %, cf. `docs/exploration-donnees.md`.
 
 **Filtres appliqués :**
 - `fare_amount > 0`, `total_amount > 0`, `tip_amount >= 0` (montants cohérents)
@@ -105,8 +106,8 @@ Tout est en **`table` / `view`**, **pas en incrémental**. Décision et raisons 
 - **L'incrémental sur des agrégats est un piège** : les marts agrègent par jour/heure/zone. Un
   append naïf par `loaded_at` **double-compterait** dès qu'un nouveau batch touche un grain
   existant (il faut un `merge` + re-agrégation des partitions → complexe et source de bugs silencieux).
-- **Gain quasi nul ici** : dataset quasi figé (2024 + début 2025) + run **mensuel** → on n'amortit
-  pas la complexité. Un full run = un scan ~40 M + `group by` simples = quelques minutes de warehouse.
+- **Gain quasi nul ici** : dataset quasi figé (2024-2025, 24 mois) + run **mensuel** → on n'amortit
+  pas la complexité. Un full run = un scan ~90 M + `group by` simples = ~40 s de warehouse X-Small.
 - **Soutenance** : un DAG `view → table → table` s'explique en 30 s ; l'incrémental ajoute de la
   plomberie à démontrer.
 

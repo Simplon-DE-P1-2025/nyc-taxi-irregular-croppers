@@ -22,7 +22,7 @@ Concepts clés :
 | **materialization** | `view` (recalcule à la lecture) ou `table` (stockée) | staging=view, int+marts=table |
 | **DAG** | dbt déduit l'ordre d'exécution à partir des `ref()` | source → stg → int → marts |
 | **tests** | assertions en YAML (`not_null`, `unique`, plages…) | `_models.yml` de chaque couche |
-| **seed** | un petit CSV versionné chargé en table | (à venir : `taxi_zone_lookup`) |
+| **seed** | un petit CSV versionné chargé en table | `taxi_zone_lookup` (265 zones TLC) |
 | **docs** | site HTML auto-généré à partir des descriptions | `dbt docs generate` |
 
 Le point fort : grâce aux `ref()`, dbt **connaît les dépendances** → il construit dans l'ordre,
@@ -109,12 +109,12 @@ uv run dbt docs generate && uv run dbt docs serve   # documentation interactive 
 
 ---
 
-## 5. Prochaine étape : enrichir les zones (lookup TLC)
+## 5. Les zones enrichies (lookup TLC) — livré
 
-`zone_analysis` sort aujourd'hui des **ID de zone** bruts. On va les rendre lisibles (Borough, nom de
-zone) via un **seed** `taxi_zone_lookup`. La démarche détaillée et son impact sont décrits dans
-**`docs/plan-zone-lookup-seed.md`** — c'est un bon premier exercice dbt « de bout en bout » (seed +
-jointure + test `relationships`).
+`zone_analysis` expose les zones **lisibles** (Borough, nom de zone, 263 zones en sortie) grâce au
+**seed** `taxi_zone_lookup` (265 lignes), joint dans le mart avec un test `relationships`. La
+démarche qui a mené à ce choix est conservée dans **`docs/plan-zone-lookup-seed.md`** — un bon
+exemple dbt « de bout en bout » (seed + jointure + test).
 
 ---
 
